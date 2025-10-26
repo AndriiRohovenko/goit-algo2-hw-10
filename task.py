@@ -11,16 +11,29 @@ class Teacher:
 
 
 def create_schedule(subjects, teachers):
-    for subject in subjects:
-        for teacher in teachers:
-            if (
-                subject in teacher.can_teach_subjects
-                and subject not in teacher.assigned_subjects
-            ):
-                teacher.assigned_subjects.append(subject)
-                break
+    # Зберігатиме обрані підмножини
+    chosen_teachers = []
+    # Непокриті елементи з subjects
+    uncovered_subjects = subjects.copy()
 
-    return teachers
+    # Поки є непокриті елементи
+    while uncovered_subjects:
+        # Знайдемо підмножину, яка покриває найбільшу кількість непокритих елементів
+        best_teacher = max(
+            teachers,
+            key=lambda teacher: (len(teacher.can_teach_subjects & uncovered_subjects)),
+        )
+        # Предмети, які цей викладач може покрити зараз
+        covered_now = best_teacher.can_teach_subjects & uncovered_subjects
+
+        # Додаємо викладача до обраних
+        best_teacher.assigned_subjects = covered_now
+        chosen_teachers.append(best_teacher)
+
+        # Видаляємо покриті предмети
+        uncovered_subjects -= covered_now
+
+    return chosen_teachers
 
 
 if __name__ == "__main__":
@@ -83,6 +96,6 @@ if __name__ == "__main__":
             print(
                 f"{teacher.first_name} {teacher.last_name}, {teacher.age} років, email: {teacher.email}"
             )
-            print(f"   Викладає предмети: {', '.join(teacher.assigned_subjects)}\\n")
+            print(f"Викладає предмети: {', '.join(teacher.assigned_subjects)}\\n")
     else:
         print("Неможливо покрити всі предмети наявними викладачами.")
